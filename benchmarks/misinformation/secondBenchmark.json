@@ -1,0 +1,14 @@
+{
+        "data.train": "data/empty-TI.csv",
+        "data.test": "data/st1ext.csv",
+        "corresponding_data": false,
+        "domains": ["misinformation"],
+        "response_types": ["single-choice"],
+        "models": [
+            "models/MotivatedReasoning/s2mr.py",
+            "models/ClassicalReasoning/cr.py",
+            "models/MachineLearning/ml.py",
+            "models/Heuristic/hr.py",
+            "models/Baseline/rand.py",
+            "models/Baseline/corr.py"
+        ]}

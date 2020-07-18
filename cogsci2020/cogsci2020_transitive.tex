@@ -1,0 +1,419 @@
+% 
+% Annual Cognitive Science Conference
+% Sample LaTeX Paper -- Proceedings Format
+% 
+
+% Original : Ashwin Ram (ashwin@cc.gatech.edu)       04/01/1994
+% Modified : Johanna Moore (jmoore@cs.pitt.edu)      03/17/1995
+% Modified : David Noelle (noelle@ucsd.edu)          03/15/1996
+% Modified : Pat Langley (langley@cs.stanford.edu)   01/26/1997
+% Latex2e corrections by Ramin Charles Nakisa        01/28/1997 
+% Modified : Tina Eliassi-Rad (eliassi@cs.wisc.edu)  01/31/1998
+% Modified : Trisha Yannuzzi (trisha@ircs.upenn.edu) 12/28/1999 (in process)
+% Modified : Mary Ellen Foster (M.E.Foster@ed.ac.uk) 12/11/2000
+% Modified : Ken Forbus                              01/23/2004
+% Modified : Eli M. Silk (esilk@pitt.edu)            05/24/2005
+% Modified : Niels Taatgen (taatgen@cmu.edu)         10/24/2006
+% Modified : David Noelle (dnoelle@ucmerced.edu)     11/19/2014
+% Modified : Roger Levy (rplevy@mit.edu)     12/31/2018
+
+
+
+%% Change "letterpaper" in the following line to "a4paper" if you must.
+
+\documentclass[10pt,letterpaper]{article}
+
+\usepackage{cogsci}
+
+%\cogscifinalcopy % Uncomment this line for the final submission 
+
+
+\usepackage{pslatex}
+\usepackage[nodoi]{apacite}
+\usepackage{float} % Roger Levy added this and changed figure/table
+% placement to [H] for conformity to Word template,
+% though floating tables and figures to top is
+% still generally recommended!
+
+%\usepackage[none]{hyphenat} % Sometimes it can be useful to turn off
+%hyphenation for purposes such as spell checking of the resulting
+%PDF.  Uncomment this block to turn off hyphenation.
+
+
+% custom imports
+\usepackage{xcolor}
+\usepackage{url}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{graphicx}
+\usepackage{xspace}
+\usepackage{enumitem}
+\usepackage{booktabs}
+
+\usepackage[subtle]{savetrees}
+
+%\setlength\titlebox{4.5cm}
+% You can expand the titlebox if you need extra space
+% to show all the authors. Please do not make the titlebox
+% smaller than 4.5cm (the original size).
+%%If you do, we reserve the right to require you to change it back in
+%%the camera-ready version, which could interfere with the timely
+%%appearance of your paper in the Proceedings.
+\usepackage{ifthen}
+\newcounter{examplenumber}
+\newcommand{\example}[1][\empty]{
+	\ifthenelse{\equal{#1}{\empty}}
+	{\refstepcounter{examplenumber} \noindent\textsf{Example$\;$\theexamplenumber:}\label{exp:\theexamplenumber}\xspace}
+	{\refstepcounter{examplenumber} \noindent\textsf{Example$\;$\theexamplenumber:}\label{#1}\xspace}
+}
+
+
+% Custom Definitions
+\definecolor{todocolor}{RGB}{195,39,43}
+\definecolor{tempcolor}{RGB}{91,137,48}
+\newcommand{\todo}[1]{{\color{todocolor} \bfseries #1}}
+\newcommand{\temp}[1]{{\color{tempcolor} \bfseries #1}}
+\newcommand{\TI}{TI}
+\newcommand{\CCOBRA}{Cognitive Computation for Behavioral Reasoning Analysis}
+
+
+
+\title{Transitive Reasoning Across Species:\\ From Models to Predictions}
+
+\author{{\large \bf Morton Ann Gernsbacher (MAG@Macc.Wisc.Edu)} \\
+	Department of Psychology, 1202 W. Johnson Street \\
+	Madison, WI 53706 USA
+	\AND {\large \bf Sharon J.~Derry (SDJ@Macc.Wisc.Edu)} \\
+	Department of Educational Psychology, 1025 W. Johnson Street \\
+	Madison, WI 53706 USA}
+
+
+\begin{document}
+	\maketitle
+	
+	\empty
+	\begin{abstract}
+		Transitive inferences have been reported in different species, however, the mechanisms are still not fully understood. Over the years, a plethora of cognitive models to explain transitive inferences has emerged. The aim of this paper is to revisit the research on transitive reasoning from a computational perspective in order to quantitatively compare theories and models. We collected data from five experiments across four species, implemented 10 models for transitive inferences, and evaluated the models on the data. Our findings show that across species the model by DeSoto generates the highest predictive performance, but for each species other computational models generate better predictions. Implications for modeling transitive reasoning are discussed.
+		
+		\textbf{Keywords:} 
+		Transitive Inferences; Computational Cognitive Modeling; Animal Cognition; Reasoning
+	\end{abstract}
+	
+	
+	\section{Introduction}
+	\iffalse
+	\todo{TODO}
+	\setlist{itemsep=-2pt}
+	\begin{itemize}[before=\color{todocolor}]
+		\item Tabelle: Parmeter auf Spezies optimiert + SD
+		\item Wie werden die Parameter in der Literatur optimiert? Auf Training oder Test?
+		\item Auf was werden die Modelle getestet?
+		\item Pro Individuum oder generell?
+		\medskip
+		\item Was ist das best-fittendste Modell für einzelne Spezies?
+		\item statistischer Test zum 2. besten Modell
+	\end{itemize}
+	\fi
+	
+	Reasoning, the ability to infer new knowledge from prior information, is central to human cognition. It allows to process, connect and infer information and is one of the key elements in society, science, politics, economics, and the everyday life of each individual. In a typical study on human reasoning, participants would be given a set of premises and be asked to produce a conclusion or verify the integrity of a given conclusion. An example for this is the following task from the area of relational reasoning:
+	
+	
+	\begin{center}
+		\begin{tabular}{lp{60mm}}
+			\emph{Premise 1} & Ann is taller than Bob.\\
+			\emph{Premise 2} & Bob is taller than Cath. \\ 
+			\cline{1-2}
+			\emph{Conclusion} & Therefore, Ann is taller than Cath.
+		\end{tabular}
+	\end{center}
+	What makes this task relatively easy to solve for most people is that the used relation `taller than' is \emph{transitive}.
+	From the information `a is taller than b' and `b is taller than c' we can follow that `a is taller than c'. In non-human animals and pre-operational children, the ability to infer transitively is often measured by means of paired-associate learning \cite<e.g.,>{steirn1995, mcgonigle1977, bryant1971}. The aim is to establish a chain of pairwise associations from which the creatures are supposed to generate relations between novel pairings in the testing phase.
+	
+	Transitive inferences (TI) are usually studied in an \emph{n-term task}, where \emph{n} entities are connected via premises.
+	In the original experiment, \citeA{bryant1971} presented children with five rods of different color ($A$, $B$, $C$, $D$, $E$).
+	Each color was associated with a specific length and the lengths were in a linear order $(A > B > C > D > E)$.
+	In the training phase, children were presented with contiguous pairs of the five colored rods ($AB$, $BC$, $CD$, $DE$) without being able to perceive the lengths and asked which of the two were longer or shorter. 
+	They then received feedback on the correctness of their choice.
+	In the test phase, the children were given all pairwise combinations of the rods and again asked to choose which one is longer or shorter.
+	Critical were the pairings which were not adjacent in the linear ordering (e.g., $AC$ or $BE$).
+	If children chose the correct rod in these trials, it indicated they were able to infer new information from what was previously learned, and hence make transitive inferences.
+	Most importantly, the correct choice for the pairing $BD$ is considered crucial to show \TI, as pairings involving the end-anchors $A$ or $E$ can easily be explained by reinforcement history.
+	Children as young as 4 years performed well on this test. This procedure has been adapted for a diversity of non-human animals \cite<e.g.,>{vonfersen1991, mcgonigle1977}. In recent years, the interest in TI on implied linear orders for adults has grown \cite<e.g.,>{lazareva2012a}.
+	The nature of what is learned, whether a mental representation of the items in the task is constructed or the behavior is merely the result of different valuations of the items, is still being questioned to this day \cite{guez2013, lazareva2012a}, and a large variety of models have been proposed.
+	
+	Understanding the processes of TI can have important implications for the study of the evolution of reasoning.
+	Especially the study across species can lead to an understanding, either of how these processes evolved, or of how the same cognitive skill can be implemented differently across species.
+	The literature often takes up a monolithic stance on these questions, assuming either a purely behavioral, or a higher-level cognitive process of TI \cite<but, see>{jensen2015}.
+	Experiments are only seldom re-conducted with different species, and the plethora of proposed models are rarely compared across experiments and species.
+	
+	\subsection{Goal of the Paper}
+	Up to now there exist at least 14 diverse theories and models that have been tested in some papers on data stemming from empirical research with different animals. What is missing so far is a comprehensible analysis of the performance of the different theories/models on a general benchmark set that comprises different species. To capture this, we will:
+	\begin{itemize}
+		\setlength\itemsep{-.3em}
+		\item First, establish a database with different species on a comparable experimental paradigm, that can form a benchmark set. So far only few experimental data is publicly available or accessible. % including data collection and data preparation
+		
+		\item Second, search for theories and cognitive and computational models for transitive reasoning. To be comparable, we need to develop a common ground and to formalize and implement these theories.
+		
+		\item Third, discuss evaluation methods. Very often mathematical models are just fitted to the data. Hence very often it is not distinguished between training and test data set. We need to evaluate the predictivity of the models.  
+	\end{itemize}
+	
+	By this rigorous approach, we hope to gain insights into: which model can explain species and individual members in each species best? Can we identify if there are significant differences between underlying cognitive representations and operations for different species? Can we discern which general approach (associative or symbolic) performs best overall?
+	The remainder of the paper is structured as follows: First we will briefly review the existing computational models on transitive reasoning. Then we present the method that follows the three points above. A discussion of the findings concludes the paper.
+	\section{Computational Models for Transitive Inferences}
+	
+	A large variety of models for TI have been proposed, which can be roughly grouped into two categories, reinforcement-based models and cognitive models. Reinforcement theories are based upon the attempt to describe TI using only learning mechanisms .
+	Many such mechanisms and models have been proposed, e.g., by \citeA{wynne1995} or \citeA{vonfersen1991}.
+	Novel experimental studies, however, also support a sophisticated cognitive stance on TI, at least in primates \cite{jensen2017}.
+	These cognitive accounts are mostly based on mental representation and integration of information.
+	
+	\noindent \textbf{Reinforcement-based~Models.} Reinforcement-based models propose that the behavior shown in tests for TI follows from associative learning mechanisms during training, and not from a mental representation of the ordering, i.e., creatures learn to prefer one item over another, but not form a linearly ordered representation. Reinforcement-based models typically are defined as (recursive) functions of parameters, such as a reinforcement value.
+	
+	The benefit of models of this type is that they are mostly fully mathematically specified, and can be directly used for predictions in an experimental setting \cite{lazareva2012a}.
+	In its simplest form, this type of model assumes that a presentation with a stimulus pair will lead to an increase in the associated value of the reinforced stimulus, whereas the non-reinforced stimulus will gain a decrease in value \cite{wynne1995}.
+	More complicated theories \cite<e.g.,>{siemann1998} assume the existence of a context-dependent configural value of a stimulus, meaning a value that is dependent on the pairing of the stimuli.
+	Reinforcement models are able to account for a variety of experimental findings.
+	It is possible to reproduce the typical effects found in n-term series procedures, such as the end anchor effect and the symbolic distance effect \cite<e.g.,>{vonfersen1991}.
+	However, there exist experimental procedures that provide a challenge for strictly reinforcement-based models \cite<see, e.g.,>{lazareva2012a}.\smallskip
+	
+	\subsubsection{Cognitive Models.}
+	
+	Most cognitive models of \TI\ assume that the items in the test series are integrated into a linear mental representation, such as an array \cite<e.g.,>{trabasso1975}.
+	Linear representation models of \TI\ (also termed spatial array or spatial paralogic theory; \citeNP<e.g.,>{desoto1965})
+	propose that, similar to the verbal task, the implicit, nonverbal \TI\ task also elicits a mental model of the `premises', i.e., the relations between the items suggested by reinforcement, in the creature's mind.
+	
+	As pointed out by \citeA{lazareva2012a}, most cognitive models suffer from two problems.
+	Firstly, they are often  described only verbally, and are therefore under-specified regarding details of representation and mechanisms.
+	Secondly, most cognitive models cannot give an account of how the representations are acquired.
+	This is a major shortcoming, since many experiments in the area of \TI\ aim at discovering the mechanisms of learning by manipulating the training phase.\smallskip
+	
+	
+	\subsubsection{Machine Learning.} To computationally investigate the nature of \TI\, \citeA{bryson2007} used simulations in an artificial world, and \citeA{jensen2015} presented the  \emph{betasort-model} and compared it to several machine learning algorithms. This model serves as a borderline case between reinforcement-based models and cognitive models.  While generally the used machine learning-methods succeed in producing transitive inferences and succeed partly in replicating effects, such as the symbolic distance effect, they provide little explanation of the cognitive processes involved. Moreover, deriving predictions for neural correlates from methods such as $Q$-learning is not straight-forward \cite{jensen2015}. Additionally, the authors compare the simulated data only to behavioral data of a single rhesus monkey.
+	
+	\section{Methods}
+	\subsection{Data Acquisition/Benchmark Set}
+	To have a large database of models and experimental data available, we employed PubMed, PsycINFO and Google Scholar using the following keywords:  (\emph{transitive} or \emph{``linear order*''} or \emph{``n-term series''}) and (\emph{reasoning} or \emph{inference}). Furthermore, we followed the reference sections of the most promising search results.  To establish a benchmark data corpus with raw data for each single creature, we continued to search for more experimental data. This includes published sources as well as consultation of authors and researchers. The data sets we could obtain were the following:
+	
+	%\todo{performance from papers}
+	\begin{itemize}
+		\setlength\itemsep{-.3em}
+		\item \citeauthor{kao2018peerj} (\citeyearNP{kao2018peerj}; Experiment 2, 77 humans)\footnote{The data is part of an accepted publication \cite{kao2019apacite}.}. Participants were trained on five different 5-term lists of arbitrary visual stimuli (photographs) by deciding between two presented stimuli in each trial and received feedback for correct or incorrect choices. After the training phase, five new lists were created from the previously encountered stimuli. The order of the items however was changed in the new lists, to study the effect of transposing items. Participants then again had to decide between two presented stimuli.
+		\item \citeauthor{jensen2019a} (\citeyearNP{jensen2019a}; 4 macaque monkeys). The monkeys were trained on a 7-item list of photographs. In each trial, they were presented with two stimuli, and received a reward for a correct choice. The rewards varied with pair position in the list.
+		\item \citeauthor{jensen2015} (\citeyearNP{jensen2015}; 3 macaque monkeys and 19 humans). Monkeys and human participants were trained on a 7-item list of photographs. The monkeys, in each session, were first trained on the adjacent pairs, and thereafter presented with trials containing all possible pairings.
+		Human participants were first given only adjacent pairs, then only non-adjacent pairs, and lastly all possible pairs.
+		\item \citeauthor{tibbetts2019} (\citeyearNP{tibbetts2019}; 40 polistes paper wasps). Two species of wasps were exposed to the classical 5-term TI-task.
+		\item \citeauthor{camarena2018} (\citeyearNP{camarena2018}; 10 pigeons). The pigeons were trained on a 5-term series ($A>B>C>D>E$) of color stimuli and tested on all non-adjacent pairs. After the first test, the pigeons were overtrained on the pair $CD$, and then again tested on the non-adjacent pairs.
+	\end{itemize}
+	
+	
+	
+	\subsection{Model Implementations}
+	
+	For our analysis, seven associative reasoning models or model versions and three cognitive reasoning models were implemented in Python to be evaluated in the \CCOBRA\ (CCOBRA) Framework\footnote{\url{https://github.com/CognitiveComputationLab/ccobra}}. 
+	\subsubsection{RL-ELO \cite{kumaran2016}:} This is an associative model that is based on a rating scheme for stimuli. The change in associative value of a stimulus depends on the value of the stimulus it is paired with in a training trial and on which of the two stimuli is reinforced in the pairing. 
+	
+	Predicting item $X$ from a test pair $\{X,Y\}$ happens with probability $p$ as given by the following function:
+	\begin{equation*}
+	p(X|{ \{X, Y\}}) = \frac{1}{1+e^{-\beta(V[X] - V[Y])}} = 1- p(Y| {\{X, Y\}}) ,
+	\end{equation*}
+	where $\beta$ is a free parameter to avoid local minima. $V[X]$, $V[Y]$ are associative values of stimuli, as recursively calculated for each trial with learning rate $\alpha$:
+	\begin{equation*}
+	V[X]' = \begin{cases}
+	V[X] + \alpha * (1-p(X|\{X,Y\})
+	, & \text{if $X$ reinforced};\\
+	V[X] + \alpha * (p(X|\{X,Y\}-1)
+	, & \text{if $X$ inhibited}.
+	\end{cases}
+	\end{equation*}
+	
+	\subsubsection{RL-ELO$_\textbf{F}$ \cite{kumaran2016}:} A variant of the model above additionally considers a Gaussian distributed noise parameter to simulate forgetting or inaccurate retrieval of associative values.
+	\subsubsection{Value Transfer Theory \cite<VTT,>{vonfersen1991, kumaran2016}:} This model is an associative model that uses recursive associative value reassignments involving a direct and an indirect component. The following equation illustrates assignment of a new value of stimulus $X$, $V[X]'$ given $V[X]$, the current value of $X$ as well as free variables for learning rate $\alpha$, and transfer factor $\theta$ on presentation of some training pair $\{X,Y\}$.
+	\begin{equation*}
+	V[X]' = \begin{cases}
+	\alpha * (1-V[X])
+	, & \text{if $X$ reinforced};\\
+	\alpha * (-1-V[X])
+	+ \theta*V[Y]
+	, & \text{if $X$ inhibited}.
+	\end{cases}
+	\end{equation*}
+	The probability of predicting item $X$ from test pair $\{X,Y\}$ is calculated in the same manner as for RL-ELO.
+	\subsubsection{Rescorla-Wagner \cite{rescorla1972}} Is interpreted by \citeA{kumaran2016} as an instance of Value Transfer Theory with $\theta = 0$. However, \citeA{wynne1995} interprets the model's probability of $X$ from test pair $\{X,Y\}$ differently:
+	
+	\begin{equation*}
+	p(X|{ \{X, Y\}}) = \frac{1}{1+e^{-\beta \left(2*\left(\frac{V[X]}{V[X] + V[Y]}\right)-1\right)}} = 1- p(Y| {\{X, Y\}})
+	\end{equation*}
+	
+	Note, that in our context, we omitted the similarity variable $V[Z]$ -- as in the TRI-Toolbox implentation by Goodman and  Lazareva\footnote{\url{http://www.copal-lab.com/tri-toolbox.html}}, because the stimuli we deal with are non-verbal and supposed to bear no inherent meaning to test creatures. We implemented both variations of the Rescorla-Wagner model. 
+	
+	\subsubsection{Configural Cues \cite{wynne1995}:} This model is an extension of Rescorla-Wagner using configural associative values in addition to elemental values:
+	\begin{equation*}
+	V[X|\{X,Y\}] '= V[X|\{X,Y\}] + \beta * (1 - V[X|\{X,Y\}])
+	\end{equation*}
+	on reward of $X$ and 
+	\begin{equation*}
+	V[X|\{X,Y\}] '= V[X|\{X,Y\}] - \beta  * V[X|\{X,Y\}]
+	\end{equation*}
+	on non-reward of $X$. These configural values are part of the computation of prediction probability.
+	
+	\subsubsection{Bush-Mosteller \cite{bush1955stochastic, wynne1995}:} This model  bears some similarity with Rescorla-Wagner as to associative value calculation. However, prediction probability calculation differs. Given $r := \frac{V[X]}{V[X] + V[Y]}$:
+	\begin{equation*}
+	p(X|{ \{X, Y\}}) = \begin{cases}
+	0.5 + 0.883*\left(2*r - 1\right)^{0.75}
+	, &r \geq 0.5;\\
+	0.5 + 0.883*\left(1-2*r\right)^{0.75}
+	, &r < 0.5.
+	\end{cases}
+	\end{equation*}
+	\subsubsection{Siemann-Delius \cite{siemann1998}:} This model, elaborated on in \cite{guez2013}, bears some resemblance to the Configural Cues model by Wynne. A principal difference however is, that the probability of choosing a stimulus is considered on calculation of associative values $V[X|\{X,Y\}]$ of respective stimuli and stimuli pairs:
+	\begin{equation*}
+	p(X|\{X,Y\}) = \frac{V[X] * V[X|\{X,Y\}]}{V[X] * V[X|\{X,Y\}] + V[Y] * V[Y|\{X,Y\}]},
+	\end{equation*}
+	defining configural associative values $V[X|\{X,Y\}]$ with learning parameter $\alpha$ and weighting parameter $\kappa$:
+	\begin{equation*}
+	V[X|\{X,Y\}] '= V[X|\{X,Y\}] * (1 + \alpha * p(X|\{X,Y\}) * \kappa).
+	\end{equation*}
+	\subsubsection{Internal Linear Array  \cite{trabasso1975}:} A cognitive model that assumes that a linear series is produced in the test creature, allowing to retrieve predictions about stimulus pairs by comparing their order in the series; end items of an internal list are easier to retrieve and compare than those in the middle of a series. A correct answer to a stimulus pair requiring transitive inference can only be guaranteed, if internal arrays have been merged (such as AB and BC to ABC for answering testing pair \{A,C\}). Multiple implementations are conceivable; there is also ambiguity as to whether the model can make predictions that are objectively correct, once the representation has been constructed \cite{lazareva2012}, or not \cite{trabasso1975}. We implemented the Linear Array in such a way that stimuli are always inserted successfully, however retrieval is hampered by a parametric function for stimuli closer to the middle of the internal array.
+	
+	\subsubsection{Spatial Paralogic Theory \cite{desoto1965}:} Spatial Paralogic realizes that during the training phase, stimuli are arranged on an axis in a cognitive representation of space. Here, when new stimuli are inserted to the axis that have no definite relation to items already positioned, they are first inserted in the middle of the axis and then swapped with other stimuli, if the position results in inconsistencies. 
+	
+	\subsubsection{Stimulus Control Topography \cite{mcilvane2003}:} This model assumes that creatures sometimes take their decision only by selecting the reinforced stimulus from a training pair or rejecting the reinforced one instead of comparing their values as a pair. We implemented two versions: One, where the model randomly chooses to select the reinforced stimulus, inhibit the rejected one or do both actions --- and one, where select and reject decisions are remembered per stimulus in a pair and repeated in the following pairs, if applicable. 
+	
+	\subsection{Model Evaluation}
+	The methods to evaluate models for transitive reasoning differ vastly. Often models are just fitted to the test phase. We decided for a much more conservative testing approach. We consider a computational model a good model, if it is trained like the creature on the training phase and generates the respective responses in the test phase, like the creature. Hence, by splitting the raw data into a training and test set, a more objective performance of the models is possible. 
+	%\todo{Parameter-fit training PRO TIER!!}
+	
+	We tested our implemented models using the testing framework CCOBRA to test the predictive power of computational models to the results of experiments.  This procedure calls for us to define only one method: the predict function that takes as input the two stimuli presented in each trial, and it outputs the prediction of the response of the specific creature. After each prediction, a function adapts the model from the prediction and the creature's actual response, so that it makes a better prediction the next time.
+	
+	%ccobra: no optimization option .. 
+	%\todo{Wie genau werden die Funktionen in CCOBRA genutzt? predict, adapt.}
+	%\todo{DB oder P: etwas ausführlicher die Testumgebung in CCOBRA vorstellen}
+	%\todo{Ich habe mal aufgeschrieben, was ich gemacht habe. Bei Platzmangel gerne kürzen -- David}
+	
+	CCOBRA was developed to test model predictions for individual participants. On input of a list of stimulus pair trials it simulates a response that would be given according to a reasoning model. We used it to implement the models mentioned, fit their parameters and evaluate performance on experiment settings and creatures.
+	In order to enable precise fitting, we extended CCOBRA by additional predict functions that return probability values usually calculated solely for interal use for response predictions in the models. At the same time, to allow for generalization on integration of varying experiment settings, the prediction and adaptation mechanisms were extended by the possibility to model multiple successive runs training and test trial for a creature, instead of just one training phase followed by a test phase. Also, an option was implemented that allows to choose whether or not a model adapts during test trial: This is helpful when dealing with both experiment settings where correct replies where shown to creatures after test trials \cite<e.g.,>{kao2018peerj} and including some  where they where not shown. 
+	Furthermore, as CCOBRA's current prediction accuracy evaluation mechanism was not capable of handling large data sets as the ones used for this investigation, a new mechanism was written that relies less on computer working memory.
+	
+	The parameters for all CCOBRA model implementations were fitted by constrained optimization by linear approximation as implemented in scipy\footnote{https://www.scipy.org/} at a maximum of 20 iteration steps and an accuracy of $0.001$. Optimization took place gathering all pairs (not only \{B, D\}) and for all creatures within one training %or training and testing 
+	%soweit ich sehe, werden die training and testing-optimierten Daten nicht erwähnt?
+	data set. Pairs were regarded as non-ordered and it was assumed, that models adapt during training phase only, except in the data set of \cite{kao2018peerj}, where they adapt after both training and test trials. 
+	
+	
+	\section{Results}
+	The results were analyzed along the following questions:
+	\begin{itemize}
+		\item \emph{How good is each model's predictive performance of the pair $BD$ across species?} The median for each model's prediction accuracy can be seen in Table~\ref{tab}. The model by De Soto and the model always responding with the logical correct answers perform best (see Fig.~\ref{fig:bild1-trainingoptimizedonlybd}). 
+	\end{itemize}
+	\begin{table}
+		\caption{Models median performance across creatures.}
+		\label{tab}
+		\def\arraystretch{.9}
+		\setlength{\tabcolsep}{4pt}
+		\begin{tabular}{ccccc}
+			\toprule
+			De Soto & CC &Siemann-D. & Trabasso & RL-ELO \\ 
+			.7 & .691 &.687 & .687 & .663 \\ 
+			\midrule
+			RL-ELO$_F$ & VTT & Bush-M.& Rescorla-W. & SCT \\ 
+			.651 &  .608 & .588 & .587 & .536 \\ 
+			\bottomrule
+		\end{tabular}
+	\end{table}
+	
+	
+	\begin{itemize}
+		
+		\item \emph{What is the prediction accuracy during training?} The models adapt differently  during training, with parameters fitted to total prediction accuracy over all training pairs (Figure~\ref{fig:time}). For this visualization, the trials of every training session were divided in eight equal intervals and the prediction accuracy calculated as follows:
+		\begin{equation*}
+		\text{prediction accuracy in interval } i = \sum_{c}^{C}\sum_s ^{S_i}\frac{\textit{pred}_c(s)}{|C|*|S_i|}
+		\end{equation*}
+		where $C$ is the set of all creatures evaluated and $S_i$ the set of all stimulus pair trials tested for each single creature $c \in C$:
+		\begin{equation*}
+		pred_c(s) = 
+		\begin{cases}
+		p(X|\{X,Y\})
+		, & $X$ \textit{ chosen by } c\\
+		1-p(X|\{X,Y\})
+		, & $Y$ \textit{ chosen by } c
+		\end{cases}
+		\end{equation*}
+		in a stimulus pair $\{X,Y\}$, with $X$ being the objectively correct, reinforced stimulus and $p$ the probability of prediction by the respective model.
+	\end{itemize}
+	
+	\iffalse
+	\begin{enumerate}
+		
+		
+		\item Was ist eigentlich die Performanz der Spezies? Können Affen besser transitiv schließen als Menschen zb?
+		
+		monkeys: siemann delius (0.7027276 0.1183339) trabasso (0.7017958 0.1197)
+		
+		\item ist es sinnvoll, für alle spezies ein Modell zu suchen? y - wenn für alle tiere ein bestimmtes modell das beste ist, dann hat man das beantwortet
+		
+		\item gibt es ein Modell, das für alle Spezies am prädiktivsten ist? y
+		
+		\item wie gut können die modelle die unterschiede zwischen den spezies darstellen können (2-fache Homogenität) y
+		
+		\item was sind die fits innerhalb der tiere? Was sind die Parameter-Intervalle im fit? kann zb ein Lern-Parameter die Unterschiede darstellen? y
+	\end{enumerate}
+	\fi
+	
+	\begin{itemize}
+		
+		\item \emph{What is the best predictive model for each species?} The best models for the different species are quite diverse. Siemann-Delius is the best model in the specific tasks for wasps (Median = .78, SD =.134) and for monkeys (Median:.70, SD = .118). Significance compared to the second model however is only given for wasps (Wilcoxon, $p=.022$ against the second best model Configural Cues). For monkeys, the second best model was \citeA{trabasso1975}, but the difference was not significant (Wilcoxon, $p=.84$). For pigeons, the best and second best model had no significant difference ($p=1$), with the best model RL-ELO$_F$ being only slightly better (Median = .74, SD = .041) than the second best. For humans, Configural cues was the best model (Median = .8, SD =.105), however, the difference against the \citeauthor{trabasso1975} model was not significant ($p=.35$).
+		
+	\end{itemize}
+	
+	
+	\begin{figure}
+		\centering
+		\includegraphics[width=.9\linewidth]{Bild1-trainingnotAdaptInTestOptimizedOnlyBD.png}
+		\caption{The performance of 5 selected models and the logical correct model (`CorrectReply') in predicting the response for the transitive inference between stimuli $B$ and $D$ for all creatures.}
+		\label{fig:bild1-trainingoptimizedonlybd}
+	\end{figure}
+	
+	
+	
+	\begin{itemize}
+		\item \emph{What is the predictive performance for each individual creature?} In Figure \ref{fig:bild1-trainingoptimizedonlybd} the predictive performance of 5 prominent models is shown for each creature. Each colored dot represents the ratio of correct predicted responses with respect to all replies. The model `CorrectReply' that visualizes the performance of a baseline model always responding the logically correct response. De Sotos model does implement this response pattern. Some models achieved high accuracy some with a high variance. Notably, especially among humans but also in monkeys, a high ratio of answers requiring transitive inference corresponded to the correct ordering of a given series in an experiment. Partly, this accounts for the high prediction success rate models such as RL--ELO (quickly converging in a model that gives rational answers only). 
+		
+	\end{itemize}
+	
+	
+	\begin{figure}
+		\centering
+		\includegraphics[width=.9\linewidth]{Bild4-prediction_success_in_timeOptimizedtrainingnotAdaptInTestOnlyBDvertical.png}
+		\caption{The performance of all creatures during training intervals for all pairs}
+		\label{fig:time}
+	\end{figure}
+	
+	\section{Discussion}
+	Many creatures are able to draw transitive inferences, i.e., they can infer correctly that from: $A$ gives more reward than $B$ and $B$ gives more reward than $C$; $A$ gives more reward than $C$. In recent years, many experiments have been conducted and many possible models have been developed, but only few comparison have been made. We started to collect the raw data of  153 creatures, including humans, macaques, pigeons, and wasps. We reimplemented 10 computational models using associative learning or symbolic representations to draw transitive inferences. Our focus was on assessing the predictive performance of each of these models for each individual creature. The best predicting model across all creatures is the model by \citeA{desoto1965}, which generates the logically correct reply. An advantage of models, such as RL-ELO, is that they are able to quickly learn the logical response, which models such as Rescorla-Wagner, at least for the analyzed data set, do not. Humans are best described by Configural Cues, which is an associative model. While transitive reasoning can be solved by constructing a mental representation or by employing learning processes, the research question what diverse species do, cannot be simply answered, based on the experiments. An advantage of our implementation is, that we can start to tailor transitive reasoning problems, where, across training and test phase, the computational models make different predictions.
+	
+	Our analysis showed a larger than expected inter-individual difference within a species, indicating that empirical research with animals need to focus on large sample sizes. Our analysis show that models that especially for wasps the range of predictive performance range from 0 to 1, which indicates that these models do not capture the underlying processes. 
+	\iffalse
+	\begin{itemize}
+		\item aggregate data in this task more useful than individual data for the \emph{training phase}:
+		\item chance-based results, especially in the beginning, but also in the later stages
+		\item learning is a rather low-level process: while it can be argued that different humans might have different strategies to reasoning, thinking etc., the learning process is probably more universal and less individualized
+		\item compared to humans, animals fail to construct cognitive representations and rely on associative methods (far-fetched??)
+		\item Bis jetzt haben wir nur Fits, was wir erklären können. Wir sollten nicht bei Klauer stehen bleiben, sondern vielleicht auch zu JL und Ragni gehen
+		\item Unterschied zwischen assoziativen und symbolischen Ansätzen. Können wir sagen, dass auch Wespen mentale Repräsentationen bauen? mehr forschung nötig. es sieht erstmal nicht so aus, dass man sich für eine entscheiden kann.. es braucht mehr experimente (siehe Hinzundkunz 2019, Jensen 2019, aber immer nur für einzelne Spezies)
+		\item Wenn es Unterschiede ziwschen den Spezies gibt, kann man das modell-basiert begründen  Bsp was ist der Unterscied : ELO fittet Mesnchen gut, Rescorla-Wagner Wespen .... Erklärung
+		\item Vergleich wichtig weil in dem Feld .. ist es ein Vortschritt für ein Feld, wenn man eine Millionen Modelle hat? Man braucht diagnostische Kriterien, um die Modelle zu evaluieren
+		Wir haben jetzt prädiktivität der modelle angeschaut, und die comprised features, aber das könnte man natürlich auch anschauen.
+		\item wir habven uns auf BD fokussiert, aber es gibt auch noch mehr, das man sich anschauen könnte
+		leave-one-out??
+	\end{itemize}
+	\fi
+	The large amount of different models does not indicate that this rather simple process has been already understood. Arguably, it is very important to develop larger benchmark sets incorporating raw data of individual creatures and to develop more diagnostic criteria that allow to discern theories and their computational models. Despite the simplicity of transitive reasoning, the endeavor to understand it from a computational modeling perspective, has just started. 
+	
+	\bibliographystyle{apacite}
+	
+	\setlength{\bibleftmargin}{.125in}
+	\setlength{\bibindent}{-\bibleftmargin}
+	
+	\bibliography{bibliography}
+	
+	
+	
+\end{document}

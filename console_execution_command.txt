@@ -1,0 +1,1 @@
+cd ~/git/transitive-inference/transitive-inference-models && python3 -m benchmarks.relational.scripts.optimizerForAllPhybrid

@@ -1,0 +1,12 @@
+{
+        "data.train": "data/empty-TI.csv",
+        "data.test": "data/st1extPercAcc.csv",
+        "corresponding_data": false,
+        "domains": ["misinformation"],
+        "response_types": ["single-choice"],
+        "models": [
+            "models/MotivatedReasoning/s2mr.py",
+            "models/Baseline/rand.py",
+            "models/Baseline/corr.py",
+            "models/ClassicalReasoning/cr.py"
+        ]}

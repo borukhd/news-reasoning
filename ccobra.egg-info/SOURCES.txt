@@ -1,0 +1,8 @@
+README.md
+setup.py
+ccobra.egg-info/PKG-INFO
+ccobra.egg-info/SOURCES.txt
+ccobra.egg-info/dependency_links.txt
+ccobra.egg-info/entry_points.txt
+ccobra.egg-info/requires.txt
+ccobra.egg-info/top_level.txt
