@@ -24,8 +24,8 @@ class CorrectReply(ccobra.CCobraModel):
         #reply = random.choice([0,1]) if not item.truthful else random.choice([3,4])
         return str(reply)
 
-    def predictS(self, itemPair):
-        return 1
+    def predictS(self, item):
+        return 1 if item.truthful else 0
 
     def adapt(self, item, target, **kwargs):
         pass

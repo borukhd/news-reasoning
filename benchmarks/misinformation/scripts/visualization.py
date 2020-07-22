@@ -3,7 +3,7 @@ import numpy as np
 import math
 
 
-input = '/home/hippo/git/news-reasoning/benchmarks/misinformation/data/st1ext.csv'
+input = '/home/hippo/git/news-reasoning/benchmarks/misinformation/data/Study1dataReshaped.csv'
 
 lines = open(input, 'r')
 X = []
@@ -31,8 +31,13 @@ for line in lines:
             keys.append([key])
         continue
     linecount += 1
-    i = [listLine[ind['CRT']],listLine[ind['binaryResponse']],listLine[ind['truthful']]]
-    if ' ' in i: 
+    crtresults = []
+    for item in ind.keys():
+        if 'CRT1' in item or 'CRT3' in item:
+            crtresults.append(float(listLine[ind[item]] in item.split('_')[1].split(':')[1:]))
+    crt = sum(crtresults)/len(crtresults)
+    i = [crt, listLine[ind['binaryResponse']],listLine[ind['truthful']]]
+    if ' ' in i:
         continue
     i = [float(a) for a in i]
     newItem = 0.0 if int(i[1]) > 2 else 1.0

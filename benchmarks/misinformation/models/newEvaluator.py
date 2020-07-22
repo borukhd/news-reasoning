@@ -3,6 +3,9 @@ from MotivatedReasoning.s2mrcr import S2MRCR
 from ClassicalReasoning.cr import CR
 from Baseline.rand import BaselineRandom
 from Baseline.corr import CorrectReply
+from New.lc import LC
+from New.lc_byParty import LCparty
+from New.lp import LP
 from ccobra import Item
 import pandas as pd
 from scipy.optimize import *
@@ -17,9 +20,10 @@ import csv
 
 
 
-models = [CR, S2MR, S2MRCR, BaselineRandom, CorrectReply]
+models = [CR, S2MR,LP,LCparty,LC, S2MRCR, CorrectReply, BaselineRandom]
 
 sources = ['st1ext']
+sources = ['Study1dataReshaped']
 
 """
 modelBounds = {
@@ -57,23 +61,35 @@ def itemsList(source):
                 indcount += 1
             continue
         linecount += 1
-        if listLine[ind['_Accurate']] == ' ':
+        if listLine[ind['_accurate']] == '':
+            continue
+        
+        crtresults = []
+        itemComponents = {}
+        for item in ind.keys():
+            if item in ['Exciting_Democrats_Combined', 'Exciting_Republicans_Combined', 'Familiarity_Democrats_Combined', 'Familiarity_Republicans_Combined', 'Importance_Democrats_Combined', 'Importance_Republicans_Combined', 'Likelihood_Democrats_Combined', 'Likelihood_Republicans_Combined', 'Partisanship_All_Combined', 'Partisanship_All_Partisan', 'Partisanship_Democrats_Combined', 'Partisanship_Republicans_Combined', 'Sharing_Democrats_Combined', 'Sharing_Republicans_Combined', 'Worrying_Democrats_Combined', 'Worrying_Republicans_Combined']:
+                itemComponents[item] = float(listLine[ind[item]])
+            if 'CRT1' in item or 'CRT3' in item:
+                crtresults.append(float(listLine[ind[item]] in item.split('_')[1].split(':')[1:]))
+        crt = sum(crtresults)/len(crtresults)
+        if '' == listLine[ind['DemRep_C_current']]:
             continue
 
         itemsList.append(Item(
             listLine[ind['id']], listLine[ind['domain']],
             listLine[ind['task']], listLine[ind['response_type']],
             listLine[ind['choices']], listLine[ind['sequence']], 
-            float(listLine[ind['CRT']]), 
-            float(listLine[ind['Conservatism']]), 
+            float(crt), 
+            float(listLine[ind['DemRep_C_current']]), 
             bool(int(listLine[ind['truthful']])), 
-            bool(int(listLine[ind['_Accurate']])), 
+            bool(int(listLine[ind['_accurate']])), 
             bool(int(listLine[ind['_C']])), 
             bool(int(listLine[ind['_L']])),
             bool(int(listLine[ind['_N']])),  
             bool(int(listLine[ind['binaryResponse']])),
-            int(listLine[ind['ClintonTrump']]),
+            int(listLine[ind['POTUS2016_Who did yo']]),
             str(listLine[ind['response']]),
+            itemComponents,
             {}#allfeatures
         ))
     return itemsList
@@ -86,8 +102,16 @@ def main():
     for model in models:
         if model == BaselineRandom:
             continue
-        print(itemsOptimizedOneModelPeformance(model, allitems))
         print(model().name,':')
+        """
+        personOptimum = minimize(minimized,[1]*len(model().parameter.keys()), method='COBYLA',#'Nelder-Mead', #
+                options={'maxiter' : 200, 'tol' : 0.01, 'adaptive' : True}, #'rhobeg' : 5.9},
+                    args = (model, allitems))
+        """
+        personOptimum = brute(minimized, [(-2,2)]*len(model().parameter.keys()),Ns=20, args = (model, allitems))
+
+        print('  Optimized globally:  ', -1*personOptimum.fval, [round(a,5) for a in personOptimum.x0])
+        print('  Optimized per person:', -1*itemsOptimizedOneModelPeformance(model, allitems))
         #break
     print('done')
 
@@ -202,7 +226,7 @@ def itemsOneModelPeformance(pars, model, items, predicS = True):
             performanceOfPerson.append(trialperformance)
         modelPerformance.extend(performanceOfPerson)
         #print(sum(performanceOfPerson)/len(performanceOfPerson))
-    print('onemodel',sum(modelPerformance)/len(modelPerformance))
+    #print('onemodel',sum(modelPerformance)/len(modelPerformance), model(commands=pars).parameter.values())
     return sum(modelPerformance)/len(modelPerformance)
 
 def itemsOptimizedOneModelPeformance(model, items, predicS = True):
@@ -217,11 +241,11 @@ def itemsOptimizedOneModelPeformance(model, items, predicS = True):
         sequencesPerPers[item.identifier].append(item)
     people = [a for a in sequencesPerPers.keys()]
     for person in people:
-        personOptimum = minimize(minimizedOnePerson,[0]*len(model().parameter.keys()), method='COBYLA',
+        personOptimum = minimize(minimizedOnePerson,[2]*len(model().parameter.keys()), method='COBYLA',
                 options={'maxiter' : 200, 'tol' : 0.01}, args = (model, person, sequencesPerPers[person]))
         performanceOfPerson[person] = personOptimum.x
         comment = toCommandList(performanceOfPerson[person],model)
-        print([a.split('\'')[1] + ': ' + str(round(float(a.split('= ')[1]),3)) for a in comment], person, -1*round(float(personOptimum.fun),3))
+        #print([a.split('\'')[1] + ': ' + str(round(float(a.split('= ')[1]),3)) for a in comment], person, -1*round(float(personOptimum.fun),3))
         totalPerformances += personOptimum.fun
     print('onemodel',totalPerformances/len(people))
     return totalPerformances/len(people)
@@ -268,3 +292,5 @@ def personPerformance(items, pars):
 
 if __name__ == '__main__':
     main()
+
+
