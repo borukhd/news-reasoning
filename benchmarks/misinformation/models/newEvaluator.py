@@ -1,11 +1,13 @@
 from MotivatedReasoning.s2mr import S2MR
 from MotivatedReasoning.s2mrcr import S2MRCR
 from ClassicalReasoning.cr import CR
+from ClassicalReasoning.cr_recog import CRrecog
 from Baseline.rand import BaselineRandom
 from Baseline.corr import CorrectReply
 from New.lc import LC
 from New.lc_byParty import LCparty
 from New.lp import LP
+from New.fft import FFT
 from ccobra import Item
 import pandas as pd
 from scipy.optimize import *
@@ -16,11 +18,11 @@ import warnings
 from matplotlib import pyplot as plt
 import seaborn as sns
 import csv
+import statistics as stats
+import time
 
 
-
-
-models = [CR, S2MR,LP,LCparty,LC, S2MRCR, CorrectReply, BaselineRandom]
+models = [CR]#CRrecog,S2MR, CorrectReply, BaselineRandom,LP,FFT,LCparty]
 
 sources = ['st1ext']
 sources = ['Study1dataReshaped']
@@ -94,52 +96,65 @@ def itemsList(source):
         ))
     return itemsList
 
+currentmax = {}
+currentmaxpers = {}
+
 def main():
     allitems = []
     for source in sources:
         allitems.extend(itemsList(source))
     #print(personPerformance(allitems, []))
-    for model in models:
-        if model == BaselineRandom:
-            continue
-        print(model().name,':')
-        """
-        personOptimum = minimize(minimized,[1]*len(model().parameter.keys()), method='COBYLA',#'Nelder-Mead', #
-                options={'maxiter' : 200, 'tol' : 0.01, 'adaptive' : True}, #'rhobeg' : 5.9},
-                    args = (model, allitems))
-        """
-        personOptimum = brute(minimized, [(-2,2)]*len(model().parameter.keys()),Ns=20, args = (model, allitems))
-
-        print('  Optimized globally:  ', -1*personOptimum.fval, [round(a,5) for a in personOptimum.x0])
-        print('  Optimized per person:', -1*itemsOptimizedOneModelPeformance(model, allitems))
-        #break
+    pool = Pool(4)
+    pool.map(doModel, [(model, allitems) for model in models if not "nandom" in model().name])
     print('done')
+
+
+def doModel(args):
+    model, allitems = args
+    try:
+        model().trainModel(allitems)
+        print(model().name, 'trained.')
+    except:
+        pass
+    currentmax[model().name] = 0
+    print(model().name,':')
+    if len(model().parameter.keys()) > 0:
+        personOptimum = basinhopping(minimized, [0]*len(model().parameter.keys()),niter=120, stepsize=3.0, T=0.8, minimizer_kwargs={"args" : (model, allitems)},disp=False)
+        print(model().name, '  Optimized globally:  ', -1*minimized(personOptimum.x, model, allitems), personOptimum.x)
+        perf2d, corr2d, tend2d, pars =itemsOptimizedOneModelPeformance(model, allitems)
+        perf = [item for sublist in perf2d for item in sublist]
+        corr = [item for sublist in corr2d for item in sublist]
+        tend = [item for sublist in tend2d for item in sublist]
+        print(model().name, '  Optimized per person:', 
+            stats.mean(perf), stats.stdev(perf), stats.mean(corr), stats.stdev(corr), stats.mean(tend), stats.stdev(tend), 
+            [(stats.mean([pars[key][a] for key in pars.keys()]),stats.stdev([pars[key][a] for key in pars.keys()])) for a in range(len([pars[[a for a in pars.keys()][0]]]))])
+    else:
+        print(model().name, '  Non Optimizable:     ', -1*minimized([], model, allitems))
 
 def minimized(pars, model, items):
     optCommands = []
     i = 0
-    for a in model().parameter.keys():
-        optCommands.append('self.parameter[\'' + a + '\'] = ' + str(pars[i]))
+    parKeys = sorted(model().parameter.keys())
+    for a in parKeys:
+        if len(pars)<=i: 
+            break
+        optCommands.append('self.parameter[\'' + a + '\'] = ' + str(pars[parKeys.index(a)]))
         i += 1
     return round(-1*itemsOneModelPeformance(optCommands, model, items),100)
 
 def minimizedOnePerson(pars, model, person, items):
-    optCommands = []
-    i = 0
-    for a in model().parameter.keys():
-        optCommands.append('self.parameter[\'' + a + '\'] = ' + str(pars[i]))
-        i += 1
-    return round(-1*itemsOnePersonOneModelPeformance(optCommands, model, person, items),100)
-
-
-def minimizedOneModelPerPerson(pars, model, person, items):
     optCommands = toCommandList(pars, model)
-    return round(-1*itemsOptimizedOneModelPeformance(optCommands, model, person, items),100)
+    perf, corr, tend = itemsOnePersonOneModelPeformance(optCommands, model, person, items)
+    return round(-1*sum(perf)/len(perf),100)
 
 def toCommandList(pars, model):
     optCommands = []
     i = 0
-    for a in model().parameter.keys():
+    parKeys = sorted(model().parameter.keys())
+    for a in parKeys:
+        if len(pars)<=i: 
+            print('keys length error', model)
+            break
         optCommands.append('self.parameter[\'' + a + '\'] = ' + str(pars[i]))
         i += 1
     return optCommands
@@ -199,7 +214,9 @@ def itemsModelPeformance(items, pars, predicS = True):
 def itemsOneModelPeformance(pars, model, items, predicS = True):
     #input: list of items
     items = [a for a in items]
+    modelTendency = []
     modelPerformance = []
+    modelCorrectness = []
     sequencesPerPers = {}
     for item in items:
         if item.identifier not in sequencesPerPers.keys():
@@ -209,46 +226,59 @@ def itemsOneModelPeformance(pars, model, items, predicS = True):
     for person in sequencesPerPers.keys():
         performanceOfPerson= []
         m = model(commands=pars)
-        #print(pars)
-        #print(m.parameter)
         for seq in sorted([int(a) for a in sequencesPerPers[person].keys()]):
             item = sequencesPerPers[person][str(seq)]
             if not predicS:
-                prediction = (item.response == m.predict(item))
+                predictionPerf = (item.response == m.predict(item))
             else:
+                pred = min(1.0,max(m.predictS(item),0.0)) 
                 if item.birep:
-                    prediction = min(1.0,max(m.predictS(item),0.0)) 
+                    predictionPerf = min(1.0,max(m.predictS(item),0.0)) 
                 elif not item.birep:
-                    prediction = 1.0 - min(1.0,max(m.predictS(item),0.0)) 
+                    predictionPerf = 1.0 - pred
                 else:
                     print('Error')
-            trialperformance = prediction #if item.birep else 1-prediction
+            modelTendency.append(pred)
+            modelCorrectness.append(pred if item.truthful else 1-pred)
+            trialperformance = predictionPerf #if item.birep else 1-prediction
             performanceOfPerson.append(trialperformance)
         modelPerformance.extend(performanceOfPerson)
-        #print(sum(performanceOfPerson)/len(performanceOfPerson))
-    #print('onemodel',sum(modelPerformance)/len(modelPerformance), model(commands=pars).parameter.values())
+    if sum(modelPerformance)/len(modelPerformance)> currentmax[model().name]:
+        print('currentmax', model().name ,sum(modelPerformance)/len(modelPerformance), 'tendency:', sum(modelTendency)/len(modelTendency), 'correctness:', sum(modelCorrectness)/len(modelCorrectness), model(commands=pars).parameter)
+        currentmax[model().name] = sum(modelPerformance)/len(modelPerformance)
     return sum(modelPerformance)/len(modelPerformance)
 
-def itemsOptimizedOneModelPeformance(model, items, predicS = True):
+def itemsOptimizedOneModelPeformance(model, items, predicS = True, atMostPeople = -1):
     #input: list of items
-    totalPerformances = 0
+    peopleCounter = 0
+    totalPerformances = []
     items = [a for a in items]
     performanceOfPerson = {}
+    correctnessOfPerson = {}
+    tendencyOfPerson = {}
     sequencesPerPers = {}
+    parametersOfPerson = {}
     for item in items:
         if item.identifier not in sequencesPerPers.keys():
             sequencesPerPers[item.identifier] = []
         sequencesPerPers[item.identifier].append(item)
     people = [a for a in sequencesPerPers.keys()]
     for person in people:
-        personOptimum = minimize(minimizedOnePerson,[2]*len(model().parameter.keys()), method='COBYLA',
+        personOptimum = basinhopping(minimizedOnePerson, [0]*len(model().parameter.keys()),niter=120, stepsize=3.0, T=0.8, minimizer_kwargs={"args" : (model, person, sequencesPerPers[person])})
+        """
+        minimize(minimizedOnePerson,[2]*len(model().parameter.keys()), method='COBYLA',
                 options={'maxiter' : 200, 'tol' : 0.01}, args = (model, person, sequencesPerPers[person]))
-        performanceOfPerson[person] = personOptimum.x
-        comment = toCommandList(performanceOfPerson[person],model)
-        #print([a.split('\'')[1] + ': ' + str(round(float(a.split('= ')[1]),3)) for a in comment], person, -1*round(float(personOptimum.fun),3))
-        totalPerformances += personOptimum.fun
-    print('onemodel',totalPerformances/len(people))
-    return totalPerformances/len(people)
+        """
+        perf, corr, tend = itemsOnePersonOneModelPeformance(toCommandList(personOptimum.x, model), model, person, sequencesPerPers[person])
+        performanceOfPerson[person] = perf
+        correctnessOfPerson[person] = corr
+        tendencyOfPerson[person] = tend
+        parametersOfPerson[person] = personOptimum.x
+        if atMostPeople > peopleCounter and atMostPeople > 0:
+            peopleCounter +=1
+        if atMostPeople <= peopleCounter:
+            break
+    return performanceOfPerson.values(), correctnessOfPerson.values(), tendencyOfPerson.values(), parametersOfPerson
 
 
 def seqnum(item):
@@ -257,6 +287,8 @@ def seqnum(item):
 def itemsOnePersonOneModelPeformance(pars, model, person, items, predicS = True):
     #input: list of items
     items = [a for a in items]
+    modelTendency = []
+    modelCorrectness = []
     performanceOfPerson = []
     m = model(commands=pars)
     for item in sorted(items, key=seqnum):
@@ -264,16 +296,22 @@ def itemsOnePersonOneModelPeformance(pars, model, person, items, predicS = True)
             print('Error')
             RuntimeError
         if not predicS:
-            prediction = float(item.response == m.predict(item))
+            predictionPerf = float(item.response == m.predict(item))
         else:
+            pred = min(1.0,max(m.predictS(item),0.0)) 
             if item.birep:
-                prediction = min(1.0,max(m.predictS(item),0.0)) 
+                predictionPerf = min(1.0,max(m.predictS(item),0.0)) 
             elif not item.birep:
-                prediction = 1-min(1.0,max(m.predictS(item),0.0)) 
+                predictionPerf = 1.0 - pred
             else:
                 print('Error')
-        trialperformance = prediction #if item.birep else 1-prediction
-        performanceOfPerson.append(trialperformance)
+        modelTendency.append(pred)
+        modelCorrectness.append(pred if item.truthful else 1-pred)
+        performanceOfPerson.append(predictionPerf)
+    if model().name + person not in currentmaxpers.keys() or sum(performanceOfPerson)/len(performanceOfPerson)> currentmaxpers[model().name + person]:
+        #print('currentmaxpers', model().name, person ,sum(performanceOfPerson)/len(performanceOfPerson), 'tendency:', sum(modelTendency)/len(modelTendency), 'correctness:', sum(modelCorrectness)/len(modelCorrectness), model(commands=pars).parameter)
+        currentmaxpers[model().name + person] = sum(performanceOfPerson)/len(performanceOfPerson)
+    return performanceOfPerson, modelCorrectness, modelTendency
     return sum(performanceOfPerson)/len(performanceOfPerson) 
 
 
@@ -290,7 +328,17 @@ def personPerformance(items, pars):
     return perfPerPers
                 
 
-if __name__ == '__main__':
-    main()
+def stopwatch(seconds):
+    start = time.time()
+    print(start)
+    elapsed = 0
+    while seconds< 0 or elapsed < seconds:
+        time.sleep(1)
+        print()
 
+
+if __name__ == '__main__':
+    start = time.time()
+    main()
+    print('Time for calculation:', round(time.time()-start,1))
 

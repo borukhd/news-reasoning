@@ -5,8 +5,7 @@ from random import random
 import math
 from New.sentimentanalyzer import SentimentAnalyzer
 
-responses = []
-count = {}
+
 
 class LP(ccobra.CCobraModel):
     """ TransitivityInt CCOBRA implementation.
@@ -23,6 +22,7 @@ class LP(ccobra.CCobraModel):
         self.parameter = {}
         self.relevant = ['negative_emotion', 'health', 'dispute', 'government', 'leisure', 'healing', 'military', 'fight', 'meeting', 'shape_and_size', 'power', 'terrorism', 'competing', 'optimism', 'sexual', 'zest', 'love', 'joy', 'lust', 'office', 'money', 'aggression', 'wealthy', 'banking', 'kill', 'business', 'fabric', 'speaking', 'work', 'valuable', 'economics', 'clothing', 'payment', 'feminine', 'worship', 'affection', 'friends', 'positive_emotion', 'giving', 'help', 'school', 'college', 'real_estate', 'reading', 'gain', 'science', 'negotiate', 'law', 'crime', 'stealing', 'white_collar_job', 'weapon', 'night', 'strength']
         self.relevant = ['negative_emotion', 'fight', 'optimism', 'sexual', 'money', 'aggression', 'affection', 'positive_emotion', 'science', 'law', 'crime']
+        #self.relevant = ['negative_emotion', 'optimism', 'aggression', 'positive_emotion', 'science']
         for a in self.relevant:
             self.parameter[a] = 1
         super().__init__(name, ['misinformation'], ['single-choice'], commands)

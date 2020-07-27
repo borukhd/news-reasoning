@@ -124,12 +124,12 @@ with open('/home/hippo/git/news-reasoning/benchmarks/misinformation/data/study2/
                     put = listLine[indComb[puzzled]] if puzzled in indComb else '0'
                     specout += ',' + put
                 """
-                if float(perHeadline[newsItem]['Partisanship_All_Combined'])>3.7:
+                if float(perHeadline[newsItem]['Partisanship_All_Combined'])>3.8:
                     specout += ',1,0,0'
-                elif float(perHeadline[newsItem]['Partisanship_All_Combined'])<2.3:
+                elif float(perHeadline[newsItem]['Partisanship_All_Combined'])<2.2:
                     specout += ',0,1,0'
                 else: 
-                    specout += ',0,0,0'
+                    specout += ',0,0,1'
                 trialList = ['Fake'+str(i) for i in range(1,19)] + ['Real'+str(i) for i in range(1,19)]
                 index = str(trialList.index(newsItem)) if newsItem in trialList else '14' #+ str(any(char for char in trialList[14] if char not in newsItem))
                 if 'e' in index:

@@ -18,11 +18,11 @@ class LCparty(ccobra.CCobraModel):
         self.parameter = {}
         #self.parameter['thresh'] = 10
         #self.componentKeys = ['Exciting_Democrats_Combined', 'Exciting_Republicans_Combined', 'Familiarity_Democrats_Combined', 'Familiarity_Republicans_Combined', 'Importance_Democrats_Combined', 'Importance_Republicans_Combined', 'Likelihood_Democrats_Combined', 'Likelihood_Republicans_Combined', 'Partisanship_All_Combined', 'Partisanship_All_Partisan', 'Partisanship_Democrats_Combined', 'Partisanship_Republicans_Combined', 'Sharing_Democrats_Combined', 'Sharing_Republicans_Combined', 'Worrying_Democrats_Combined', 'Worrying_Republicans_Combined']
-        self.componentKeys = ['Exciting_Party_Combined', 'Familiarity_Party_Combined', 'Importance_Party_Combined', 'Partisanship_All_Combined', 'Partisanship_All_Partisan', 'Partisanship_Party_Combined','Worrying_Party_Combined']
-        self.componentKeys=self.componentKeys[-3:]
+        self.componentKeys = ['Exciting_Party_Combined', 'Familiarity_Party_Combined', 'Partisanship_Party_Combined','Worrying_Party_Combined','Importance_Party_Combined',  'Partisanship_All_Combined', 'Partisanship_All_Partisan']
+        #self.componentKeys=self.componentKeys[:3]
         for a in self.componentKeys:
             self.parameter[a] = 0
-        self.thresh = len(self.parameter)*3
+        self.thresh = 1
         super().__init__(name, ['misinformation'], ['single-choice'], commands)
 
     def predict(self, trial, **kwargs):

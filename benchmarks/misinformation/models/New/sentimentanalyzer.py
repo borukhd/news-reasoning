@@ -1,6 +1,9 @@
 from empath import Empath
 
+
 class SentimentAnalyzer:
+    responses = []
+    count = {}
     initialized = False
     lexicon = Empath()
     relevant = ['negative_emotion', 'health', 'dispute', 'government', 'leisure', 'healing', 'military', 'fight', 'meeting', 'shape_and_size', 'power', 'terrorism', 'competing', 'optimism', 'sexual', 'zest', 'love', 'joy', 'lust', 'office', 'money', 'aggression', 'wealthy', 'banking', 'kill', 'business', 'fabric', 'speaking', 'work', 'valuable', 'economics', 'clothing', 'payment', 'feminine', 'worship', 'affection', 'friends', 'positive_emotion', 'giving', 'help', 'school', 'college', 'real_estate', 'reading', 'gain', 'science', 'negotiate', 'law', 'crime', 'stealing', 'white_collar_job', 'weapon', 'night', 'strength']
@@ -43,11 +46,28 @@ class SentimentAnalyzer:
             'Fake17': "Trump's Top Scientist Pick: \"Scientists Are Just Dumb Regular People That Think Dinosaurs Existed And The Earth Is Getting Warmer\"",
             'Fake18': "W.H. Staffers Defect, Releasing Private Tape Recording That Has Trump Silent",
         }
+
     @staticmethod
     def initialize():
+        if SentimentAnalyzer.initialized:
+            return
         for a in SentimentAnalyzer.text.keys():
             SentimentAnalyzer.result[a] = SentimentAnalyzer.lexicon.analyze(SentimentAnalyzer.text[a], categories=SentimentAnalyzer.relevant)
         SentimentAnalyzer.initialized = True
+        SentimentAnalyzer.filterFrequency()
+
+    @staticmethod
+    def filterFrequency():
+        for a in SentimentAnalyzer.relevant:
+            SentimentAnalyzer.count[a] = 0 
+        for task in SentimentAnalyzer.text.keys():
+            for a in SentimentAnalyzer.relevant:
+                SentimentAnalyzer.count[a] += float(SentimentAnalyzer.result[task][a])
+        x = SentimentAnalyzer.count
+        sortedFreq = {k: v for k, v in sorted(x.items(), key=lambda item: item[1])}
+        minimumFreq = 2
+        SentimentAnalyzer.relevant = [a for a in SentimentAnalyzer.count.keys() if float(SentimentAnalyzer.count[a]) > minimumFreq]
+        #print(SentimentAnalyzer.relevant)
 
     @staticmethod
     def analysis(item):

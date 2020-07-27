@@ -15,7 +15,7 @@ class BaselineRandom(ccobra.CCobraModel):
             Unique name of the model. Will be used throughout the ORCA
             framework as a means for identifying the model.
         """
-        self.a = 1                              #constant
+        self.parameter = {}
         super().__init__(name, ['misinformation'], ['single-choice'], commands)
 
     def predict(self, item, **kwargs):

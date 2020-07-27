@@ -1,0 +1,2 @@
+class FFTtool:
+    fc = None
