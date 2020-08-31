@@ -1,0 +1,3 @@
+class metaModelData:
+    sequencesPerPers = {}
+    modelTendencyPerTask = {}

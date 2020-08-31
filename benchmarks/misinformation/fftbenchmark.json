@@ -1,0 +1,9 @@
+{
+        "data.pre_train": "data/Study1dataReshapedMini.csv",
+        "data.test": "data/Study1dataReshapedMini.csv",
+        "corresponding_data": false,
+        "domains": ["misinformation"],
+        "response_types": ["single-choice"],
+        "models": [
+            "models/New/fft.py"
+        ]}

@@ -1,6 +1,6 @@
 {
-        "data.train": "data/empty-TI.csv",
-        "data.test": "data/st1ext.csv",
+        "data.pre_train": "data/Study1dataReshaped.csv",
+        "data.test": "data/Study1dataReshaped.csv",
         "corresponding_data": false,
         "domains": ["misinformation"],
         "response_types": ["single-choice"],
@@ -8,7 +8,9 @@
             "models/MotivatedReasoning/s2mr.py",
             "models/ClassicalReasoning/cr.py",
             "models/MachineLearning/ml.py",
-            "models/Heuristic/hr.py",
+            "models/New/lp.py",
+            "models/New/lc_byParty.py",
             "models/Baseline/rand.py",
-            "models/Baseline/corr.py"
+            "models/Baseline/corr.py",
+            "models/New/fft.py"
         ]}

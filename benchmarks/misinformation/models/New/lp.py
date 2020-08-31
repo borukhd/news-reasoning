@@ -25,21 +25,11 @@ class LP(ccobra.CCobraModel):
         #self.relevant = ['negative_emotion', 'optimism', 'aggression', 'positive_emotion', 'science']
         for a in self.relevant:
             self.parameter[a] = 1
+
+        optdict = {'negative_emotion': 3.488183752051738, 'fight': 4.795255469272864, 'optimism': 5.4718777782354735, 'sexual': 3.583167795093339, 'money': 5.249519675409447, 'aggression': 5.464386990594476, 'affection': -2.3986185486873572, 'positive_emotion': -1.4074963226019577, 'science': 1.5522568483198222, 'law': 12.874721726587898, 'crime': -2.9929120337902457}
+        for a in optdict.keys():
+            self.parameter[a] = optdict[a]
         super().__init__(name, ['misinformation'], ['single-choice'], commands)
-
-    def predict(self, trial, **kwargs):
-        p = random()
-        if trial.truthful:
-            if p < 0.6 + 0.14 * trial.crt:
-                return 'Accept' 
-            else:
-                return 'Reject'
-        if not trial.truthful:
-            if p < 0.7 + 0.22 * trial.crt: 
-                return 'Accept'
-            else:
-                return 'Reject'
-
 
     def predictS(self, trial):
         analysis = SentimentAnalyzer.analysis(trial)

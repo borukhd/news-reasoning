@@ -3,6 +3,8 @@
 import ccobra
 from random import random 
 import math
+from New.sentimentanalyzer import SentimentAnalyzer
+from staticCommon import Keys
 
 class LC(ccobra.CCobraModel):
     """ TransitivityInt CCOBRA implementation.
@@ -18,28 +20,18 @@ class LC(ccobra.CCobraModel):
         self.parameter = {}
         #self.parameter['thresh'] = 10
         self.thresh = 1
-        self.componentKeys = ['Exciting_Democrats_Combined', 'Exciting_Republicans_Combined', 'Familiarity_Democrats_Combined', 'Familiarity_Republicans_Combined', 'Importance_Democrats_Combined', 'Importance_Republicans_Combined', 'Likelihood_Democrats_Combined', 'Likelihood_Republicans_Combined', 'Partisanship_All_Combined', 'Partisanship_All_Partisan', 'Partisanship_Democrats_Combined', 'Partisanship_Republicans_Combined', 'Sharing_Democrats_Combined', 'Sharing_Republicans_Combined', 'Worrying_Democrats_Combined', 'Worrying_Republicans_Combined']
-        self.componentKeys = ['Exciting_Democrats_Combined', 'Exciting_Republicans_Combined', 'Familiarity_Democrats_Combined', 'Familiarity_Republicans_Combined', 'Importance_Democrats_Combined', 'Importance_Republicans_Combined', 'Partisanship_All_Combined', 'Partisanship_All_Partisan', 'Partisanship_Democrats_Combined', 'Partisanship_Republicans_Combined','Worrying_Democrats_Combined', 'Worrying_Republicans_Combined']
-        for a in self.componentKeys:
-            self.parameter[a] = 0
+        for a in Keys.task:
+            if a not in SentimentAnalyzer.relevant:
+                self.parameter[a] = 0
+        optdict =  {'Exciting_Party_Combined': -3.0933215184624734, 'Familiarity_Party_Combined': 17.83214047528395, 'Importance_Party_Combined': 3.185192558938423, 'Partisanship_All_Combined': 22.939675300159564, 'Partisanship_All_Partisan': 2.0986712022626524, 'Partisanship_Party_Combined': -15.087158032169091, 'Worrying_Party_Combined': -36.55073351519288}
+        for a in optdict.keys():
+            self.parameter[a] = optdict[a]
         super().__init__(name, ['misinformation'], ['single-choice'], commands)
 
-    def predict(self, trial, **kwargs):
-        p = 0
-        for a in self.componentKeys:
-            p += trial.itemComponents[a] * self.parameter[a]
-        if self.parameter['thresh'] < p:
-            return 'Accept' 
-        else:
-            return 'Reject'
-
     def predictS(self, trial):
-        #print(trial.itemComponents)
         p = 0
-        #self.parameter['thresh'] = 10
-        #print(trial.task ,trial.itemComponents.values())
-        for a in self.componentKeys:
-            p += trial.itemComponents[a]* (0.2/len(self.componentKeys)) * self.parameter[a]
+        for a in self.parameter.keys():
+            p += trial.feature(a) * self.parameter[a] * 0.3
         #if self.thresh < p:
         if 1 < p:
             return 1
@@ -47,10 +39,6 @@ class LC(ccobra.CCobraModel):
         else:
             return 0
             return self.binIncorrectCategorization(trial)
-        #print(p)
-        #if self.thresh < p:
-        #    print(p, self.thresh,1 if self.thresh < p else 0)
-        return 1 if self.thresh < p else 0
 
     def adapt(self, item, target, **kwargs):
         pass

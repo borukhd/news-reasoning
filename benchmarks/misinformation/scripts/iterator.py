@@ -1,10 +1,41 @@
 
+count = 0
+keys = []
+linenumber = 0
+perHeadline = {}
+indFirst = {}
+linePerName = {}
+with open('/home/hippo/git/news-reasoning/benchmarks/misinformation/data/pretest/pretest3.csv') as lines:
+    for line in lines:
+        linenumber += 1
+        listLine = line.replace('\r','').replace('\n','').split(',')
+        listLine = [a.replace(';',',') for a in listLine]
+        if linenumber == 1:
+            firstLine = line[:-1]
+            count = 0
+            for key in listLine:
+                indFirst[key] = count
+                count += 1
+                keys.append(key)
+        else:
+            headline = listLine[indFirst['ItemNum']]#listLine[indFirst['Headline']].partition('_')[2].partition('.')[0].replace('-','').replace(';',',').lower()
+            if headline not in perHeadline.keys():
+                perHeadline[headline] = {}
+                for key in keys:
+                    if 'amiliarity' in key:
+                        perHeadline[headline][key] = str(4.0 - float(listLine[indFirst[key]]))
+                    else:
+                        perHeadline[headline][key] = listLine[indFirst[key]]
+            if headline not in linePerName.keys():
+                linePerName[headline] = line[:-1]
+
+
 keys = []
 ind = {}
 count = 0
 counter = 0
-output = open('/home/hippo/git/news-reasoning/benchmarks/misinformation/data/st1ext.csv', "w+")
-with open('/home/hippo/git/news-reasoning/benchmarks/misinformation/data/st1.csv') as lines:
+output = open('/home/hippo/git/news-reasoning/benchmarks/misinformation/data/Study11dataReshaped.csv', "w+")
+with open('/home/hippo/git/news-reasoning/benchmarks/misinformation/data/study1/st1.csv') as lines:
     line1 = True
     for line in lines:
         listLine = line.replace('\r','').replace('\n','').split(',')
@@ -43,7 +74,7 @@ with open('/home/hippo/git/news-reasoning/benchmarks/misinformation/data/st1.csv
             for key in keys: 
                 if len(key) == 1:
                     outheader += key[0] + ','
-            output.write(outheader[:-1].replace('\n','') + '\n')
+            output.write(outheader + firstLine + '\n')
         else:
             outline = ''
             for key in keys:
@@ -92,8 +123,14 @@ with open('/home/hippo/git/news-reasoning/benchmarks/misinformation/data/st1.csv
                 for a in key: 
                     ccspecs += listLine[ind[a]] + ','
                 outstring =  specout+ ccspecs +outline 
-                finalstring = outstring[:-1] + '\n'
-                output.write(finalstring)#.replace(',,',',-9999,').replace(',,',',-9999,'))
+                if 'N' in key[0]:
+                    pretestsuffix = ''
+                    for i in range(firstLine.count(',')):
+                        pretestsuffix += ','
+                else:
+                    pretestsuffix = linePerName[key[0]]
+                finalstring = outstring  + pretestsuffix + '\n'
+                output.write(finalstring )#.replace(',,',',-9999,').replace(',,',',-9999,'))
                 #print(outline + specout)
 output.close()
 print(counter)

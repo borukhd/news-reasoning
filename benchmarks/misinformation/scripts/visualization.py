@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import seaborn as sns
 import math
 
 
@@ -15,7 +16,7 @@ linecount = 0
 line1 = True
 
 fig = plt.figure()
-ax1 = fig.add_subplot(111)
+ax1 = fig.add_subplot(121)
 
 perfPerCRTreal = {}
 perfPerCRTfake = {}
@@ -37,11 +38,10 @@ for line in lines:
             crtresults.append(float(listLine[ind[item]] in item.split('_')[1].split(':')[1:]))
             #print(float(listLine[ind[item]] in item.split('_')[1].split(':')[1:]), listLine[ind[item]], item.split('_')[1].split(':')[1:])
     crt = sum(crtresults)/len(crtresults)
-    i = [crt, listLine[ind['binaryResponse']],listLine[ind['truthful']]]
+    i = [listLine[ind['id']], listLine[ind['binaryResponse']],listLine[ind['truthful']]]
     if ' ' in i:
         continue
-    i = [float(a) for a in i]
-    newItem = 0.0 if int(i[1]) > 2 else 1.0
+    i = [int(i[0])]+[float(a) for a in i[1:]]
     newItem = i[1]
     #print(i, newItem)
     if 0 == int(i[2]):
@@ -74,14 +74,17 @@ for a in avgPerfPerCRTfake.keys():
 xr = sorted([a for a in xr])
 xf = sorted([a for a in xf])
 y1 = [avgPerfPerCRTreal[a] for a in xr]
-y2 = [avgPerfPerCRTfake[a] for a in xf]
-y3 = [(0.2 - 0.13*a) for a in range(10)]
-y4 = [(0.65 + 0.13*a) for a in range(10)]
-ax1.set(xlim=(0, 1), ylim=(0,1), xlabel='CRT', ylabel='expected response')
+y2 = [1- avgPerfPerCRTfake[a] for a in xf]
+ax1.set(xlabel='participants', ylabel='response correctness')
+#xlim=(0, 1), ylim=(0,1), 
+size = 10
+ax1.scatter(xf, y2, color='r',s=size, label = 'fake')
+ax1 = fig.add_subplot(122)
 
-ax1.scatter(xr, y1, color='b', label = 'real')
-ax1.scatter(xf, y2, color='r', label = 'fake')
-ax1.plot([a for a in range(10)], y3, color='r')
-ax1.plot([a for a in range(10)], y4, color='b')
-ax1.legend()
+xr = sorted([a for a in xr])
+xf = sorted([a for a in xf])
+y1 = [avgPerfPerCRTreal[a] for a in xr]
+y2 = [1- avgPerfPerCRTfake[a] for a in xf]
+ax1.scatter(xr, y1, color='b',s=size, label = 'real')
+#ax1.legend()
 plt.show()

@@ -15,19 +15,19 @@ class CR(ccobra.CCobraModel):
             Unique name of the model. Will be used throughout the ORCA
             framework as a means for identifying the model.
         """
-        self.parameter = {}
-        self.Cr = 0.65 
-        self.Cf = 0.2 
-        self.Mr = 0.13                              
-        self.Mf = - 0.12                           
+        self.parameter = {}                          
         super().__init__(name, ['misinformation'], ['single-choice'], commands)
 
 
     def predictS(self, trial):
+        self.parameter['Cr'] = 0.65 
+        self.parameter['Cf'] = 0.2 
+        self.parameter['Mr'] = 0.13                              
+        self.parameter['Mf'] = - 0.12 
         if trial.realnews:
-            threshold = self.Cr + self.Mr * trial.crt
+            threshold = self.parameter['Cr'] + self.parameter['Mr'] * trial.feature('crt')
         if trial.fakenews:
-            threshold = self.Cf + self.Mf * trial.crt
+            threshold = self.parameter['Cf'] + self.parameter['Mf'] * trial.feature('crt')
         return threshold
         
         

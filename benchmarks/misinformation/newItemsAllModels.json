@@ -1,13 +1,23 @@
 {
-        "data.train": "data/empty-TI.csv",
-        "data.test": "data/st1ext.csv",
+        "data.pre_train": "data/Study1dataReshaped.csv",
+        "data.test": "data/Study1dataReshaped.csv",
         "corresponding_data": false,
         "domains": ["misinformation"],
         "response_types": ["single-choice"],
         "models": [
             "models/MotivatedReasoning/s2mr.py",
+            "models/New/recommenderPerson.py",
+            "models/New/recommenderPersonLinear.py",
+            "models/Heuristic/hr.py",
+            "models/Heuristic/hrlinear.py",
+            "models/New/surp.py",
+            "models/New/rt.py",
+            "models/New/lc.py",
+            "models/New/lp.py",
             "models/Baseline/rand.py",
             "models/Baseline/corr.py",
             "models/ClassicalReasoning/cr.py",
-            "models/MotivatedReasoning/s2mrcr.py"
+            "models/New/fftzigzag.py",
+            "models/New/fftmax.py",
+            "models/New/fft.py"
         ]}
